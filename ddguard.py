@@ -187,15 +187,15 @@ def read_config(cfilename):
    if read_config.bgl_high_val == 0:
       read_config.bgl_high_val = 1000
       
-   print ("Blynk server:    %s" % read_config.blynk_server)
-   print ("Blynk token:     %s" % read_config.blynk_token)
-   print ("Blynk heartbeat: %d\n" % read_config.blynk_heartbeat)
-   print ("Nightscout server:     %s" % read_config.nightscout_server)
-   print ("Nightscout api_secret: %s\n" % read_config.nightscout_api_secret)
-   print ("BGL low:      %d" % read_config.bgl_low_val)
-   print ("BGL pre low:  %d" % read_config.bgl_pre_low_val)
-   print ("BGL pre high: %d" % read_config.bgl_pre_high_val)
-   print ("BGL high:     %d\n" % read_config.bgl_high_val)
+   syslog.syslog(syslog.LOG_NOTICE, "Blynk server:    %s" % read_config.blynk_server)
+   syslog.syslog(syslog.LOG_NOTICE, "Blynk token:     %s" % read_config.blynk_token)
+   syslog.syslog(syslog.LOG_NOTICE, "Blynk heartbeat: %d\n" % read_config.blynk_heartbeat)
+   syslog.syslog(syslog.LOG_NOTICE, "Nightscout server:     %s" % read_config.nightscout_server)
+   syslog.syslog(syslog.LOG_NOTICE, "Nightscout api_secret: %s\n" % read_config.nightscout_api_secret)
+   syslog.syslog(syslog.LOG_NOTICE, "BGL low:      %d" % read_config.bgl_low_val)
+   syslog.syslog(syslog.LOG_NOTICE, "BGL pre low:  %d" % read_config.bgl_pre_low_val)
+   syslog.syslog(syslog.LOG_NOTICE, "BGL pre high: %d" % read_config.bgl_pre_high_val)
+   syslog.syslog(syslog.LOG_NOTICE, "BGL high:     %d\n" % read_config.bgl_high_val)
    return True
 
     
@@ -232,7 +232,7 @@ def blynk_upload(data):
    global cycleCount
    
    if data != None:
-      print("Uploading data to Blynk")
+      syslog.syslog(syslog.LOG_NOTICE, "Uploading data to Blynk")
        
       # Send sensor data
       if data["sensorBGL"] in sensor_exception_codes:
@@ -302,11 +302,11 @@ def blynk_upload(data):
          
       # Active insulin / last bolus graph
       if int(data["lastBolusTime"].strftime("%s")) != lastBolusTime: 
-         print("Bolus time changed")
+         syslog.syslog(syslog.LOG_NOTICE, "Bolus time changed")
          lastBolusTime = int(data["lastBolusTime"].strftime("%s"))
          # Check if last bolus time is recent
          if int(time.time()) - lastBolusTime < 2*UPDATE_INTERVAL:
-            print("Bolus time is recent")
+            syslog.syslog(syslog.LOG_NOTICE, "Bolus time is recent")
             blynk.virtual_write(VPIN_LASTBOLUS, data["lastBolusAmount"])
       else:
          blynk.virtual_write(VPIN_ACTINS, data["activeInsulin"])
@@ -336,7 +336,7 @@ def upload_live_data():
     
    upload_live_data.active = True
    
-   print("read live data from pump")
+   syslog.syslog(syslog.LOG_NOTICE, "read live data from pump")
    hasFailed = True
    numRetries = MAX_RETRIES_AT_FAILURE
    while hasFailed and numRetries > 0:
@@ -353,12 +353,12 @@ def upload_live_data():
             
    # Account for pump RTC drift
    if liveData != None:
-      print("account for pump RTC drift:")
-      print("   before: pumpTime {0},  sensorBGLTimestamp {1}".format(liveData["pumpTime"], liveData["sensorBGLTimestamp"]))
+      syslog.syslog(syslog.LOG_NOTICE, "account for pump RTC drift:")
+      syslog.syslog(syslog.LOG_NOTICE, "   before: pumpTime {0},  sensorBGLTimestamp {1}".format(liveData["pumpTime"], liveData["sensorBGLTimestamp"]))
       liveData["pumpTime"] += liveData["pumpTimeDrift"]
       if liveData["sensorBGL"] != SENSOR_EXCEPTIONS.SENSOR_LOST:
          liveData["sensorBGLTimestamp"] += liveData["pumpTimeDrift"]
-      print("   after : pumpTime {0},  sensorBGLTimestamp {1}".format(liveData["pumpTime"], liveData["sensorBGLTimestamp"]))
+      syslog.syslog(syslog.LOG_NOTICE, "   after : pumpTime {0},  sensorBGLTimestamp {1}".format(liveData["pumpTime"], liveData["sensorBGLTimestamp"]))
     
    # Upload data to Blynk server
    if blynk != None:
@@ -378,12 +378,12 @@ def upload_live_data():
    if liveData != None:
       nextReading = liveData["sensorBGLTimestamp"] + datetime.timedelta(seconds=UPDATE_INTERVAL)
       tmoSeconds  = int((nextReading - datetime.datetime.now(liveData["pumpTime"].tzinfo)).total_seconds())
-      print("Next reading at {0}, {1} seconds from now\n".format(nextReading,tmoSeconds))
+      syslog.syslog(syslog.LOG_NOTICE, "Next reading at {0}, {1} seconds from now\n".format(nextReading,tmoSeconds))
       if tmoSeconds < 0:
          tmoSeconds = RETRY_INTERVAL
    else:
       tmoSeconds = RETRY_INTERVAL
-      print("Retry reading {0} seconds from now\n".format(tmoSeconds))
+      syslog.syslog(syslog.LOG_NOTICE, "Retry reading {0} seconds from now\n".format(tmoSeconds))
       
    # Start timer for next cycle
    cycleTimer = threading.Timer(tmoSeconds+10, upload_live_data)
@@ -406,7 +406,7 @@ nightscout_enabled = (read_config.nightscout_server != "") and (read_config.nigh
 
 # Init Blynk instance
 if blynk_enabled:
-   print("Blynk upload is enabled")
+   syslog.syslog(syslog.LOG_NOTICE, "Blynk upload is enabled")
    blynk = blynklib.Blynk(read_config.blynk_token,
                           server=read_config.blynk_server.strip(),
                           heartbeat=read_config.blynk_heartbeat)
@@ -429,7 +429,7 @@ if blynk_enabled:
 
 # Init Nighscout instance (if requested)
 if nightscout_enabled:
-   print("Nightscout upload is enabled")
+   syslog.syslog(syslog.LOG_NOTICE, "Nightscout upload is enabled")
    nightscout = nightscoutlib.nightscout_uploader(server = read_config.nightscout_server, 
                                                   secret = read_config.nightscout_api_secret)
 

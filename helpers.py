@@ -1,5 +1,6 @@
 import datetime
 import struct
+import syslog
 from dateutil import tz
 
 
@@ -31,13 +32,13 @@ class DateTimeHelper( object ):
         if epochTime < 0:
             epochTime = 0
 
-        #print ' ### DateTimeHelper.decodeDateTime rtc:0x{0:x} {0} offset:0x{1:x} {1} epochTime:0x{2:x} {2}'.format(rtc, offset, epochTime)                    
+        syslog.syslog(syslog.LOG_NOTICE, "### DateTimeHelper.decodeDateTime rtc:0x{0:x} {0} offset:0x{1:x} {1} epochTime:0x{2:x} {2}".format(rtc, offset, epochTime))                 
 
         # Return a non-naive datetime in the local timezone
         # (so that we can convert to UTC for Nightscout later)
         localTz = tz.tzlocal()
         result = datetime.datetime.fromtimestamp( epochTime, localTz )
-        #print ' ### DateTimeHelper.decodeDateTime {0:x} {1}'.format(pumpDateTime, result)        
+        syslog.syslog(syslog.LOG_NOTICE, "### DateTimeHelper.decodeDateTime {0:x} {1}".format(pumpDateTime, result))
         return result
 
     @staticmethod
@@ -46,7 +47,7 @@ class DateTimeHelper( object ):
         rtc = epochTime - offset - DateTimeHelper.baseTime;  
         if rtc > 0xFFFFFFFF:
             rtc = 0xFFFFFFFF
-        #print ' ### DateTimeHelper.rtcFromDate rtc:0x{0:x} {0} offset:0x{1:x} {1} epochTime:0x{2:x} {2}'.format(rtc, offset, epochTime)                    
+        syslog.syslog(syslog.LOG_NOTICE, "### DateTimeHelper.rtcFromDate rtc:0x{0:x} {0} offset:0x{1:x} {1} epochTime:0x{2:x} {2}".format(rtc, offset, epochTime))
         return rtc
 
 class NumberHelper( object):

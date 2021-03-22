@@ -150,7 +150,7 @@ class nightscout_uploader(object):
       # Check for "lost sensor" condition
       # We don't upload any sensor data in this case
       if (sgv == 0) and (trend == -3): # and (date.strftime("%c").find("01:00:00 1970") != -1):
-         print("Sensor lost, not uploading SGV data")
+         syslog.syslog(syslog.LOG_NOTICE, "Sensor lost, not uploading SGV data")
          return False
       
       # Check for exception codes
@@ -292,7 +292,7 @@ class nightscout_uploader(object):
             pass
          else:
             self.latest_bolus = data["lastBolusReference"]
-            print("...uploaded new bolus entry")
+            syslog.syslog(syslog.LOG_NOTICE, "...uploaded new bolus entry")
             pass
       except:
          #print("Uploading bolus record failed with exception")
@@ -360,7 +360,7 @@ class nightscout_uploader(object):
    
       rc = True
       if data != None:
-         print("Uploading data to Nightscout")
+         syslog.syslog(syslog.LOG_NOTICE, "Uploading data to Nightscout")
          
          # Upload sensor data
          rc = self.upload_entries(data)
