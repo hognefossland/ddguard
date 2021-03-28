@@ -252,6 +252,8 @@ def blynk_upload(data):
          # Regular BGL data
          
          # BLG gauge
+         #bglval = "%2.1f" % (float(data["sensorBGL"])/18)
+         #blynk.virtual_write(VPIN_SENSOR, bglval)
          blynk.virtual_write(VPIN_SENSOR, data["sensorBGL"])
          if data["pumpAlert"]["alertSuspend"] or data["pumpAlert"]["alertSuspendLow"]:
             blynk.set_property(VPIN_SENSOR, "color", BLYNK_BLUE)

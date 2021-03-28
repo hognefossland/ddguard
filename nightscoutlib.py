@@ -170,6 +170,9 @@ class nightscout_uploader(object):
       #print("url: " + url)
       #print("headers: "+json.dumps(self.headers))
       #print("payload: "+json.dumps(payload))
+      #syslog.syslog(syslog.LOG_ERR, "payload: " +json.dumps(payload))
+      output = "Date: %s, SGV: %d (%2.1f) %s" % (payload["dateString"], int(payload["sgv"]), float(payload["sgv"]/18), trend_str)
+      syslog.syslog(output)
       
       try:
          #print "Send API request"
