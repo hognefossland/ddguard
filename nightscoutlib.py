@@ -205,10 +205,19 @@ class nightscout_uploader(object):
       # Build pump status
       if data["pumpStatus"]["cgmActive"]:
          status = " | "
+         output = "Sensor battery: "
          if data["sensorStatus"]["exception"]==0:
             status = status + str(data["sensorBatteryLevelPercentage"]) + "% "
+            output = output + str(data["sensorBatteryLevelPercentage"]) + "% "
+         else:
+            output = output + "--%"
+         output = output + ", Cal time remaining: "
          if data["sensorCalMinutesRemaining"]>0:
             status = status + "{0}:{1:02d}h".format(int(data["sensorCalMinutesRemaining"]/60),data["sensorCalMinutesRemaining"]%60)
+            output = output + "{0}:{1:02d}h".format(int(data["sensorCalMinutesRemaining"]/60),data["sensorCalMinutesRemaining"]%60)
+         else:
+            output = output + "--:--h"
+         syslog.syslog(output)
       else:
          status = ""
       
@@ -235,8 +244,6 @@ class nightscout_uploader(object):
          }
       #print "url: " + url
       #print "payload: "+json.dumps(payload)
-
-      syslog.syslog("Status: " + status)
 
       try:
          #print "Send API request"
