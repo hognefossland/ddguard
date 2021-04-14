@@ -235,7 +235,9 @@ class nightscout_uploader(object):
          }
       #print "url: " + url
       #print "payload: "+json.dumps(payload)
-  
+
+      syslog.syslog("Status: " + status)
+
       try:
          #print "Send API request"
          r = requests.post(url, headers = self.headers, data = json.dumps(payload))
